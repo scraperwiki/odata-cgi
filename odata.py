@@ -97,6 +97,8 @@ def make_cells(cells):
         if key == "rowid":
             continue
 
+        odata_type = TYPEMAP[type(value)]
+
         form = CELL_VALUE
         if value is None:
             form = CELL_NULL
@@ -105,17 +107,15 @@ def make_cells(cells):
 
         if isinstance(value, str):
             value = escape(value)
+
         if type(value) == datetime:
             value = value.isoformat() + "Z"
 
         yield form.format(
-            # safe_name=cell['column_safe'],
-            # type=cell['type'],
             safe_name=key,
-            type=TYPEMAP[type(value)],
+            type=odata_type,
             value=value,
         )
-    # return result
 
 
 def render(api_server, api_path, collection, entries,
