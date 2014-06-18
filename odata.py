@@ -143,7 +143,7 @@ def render(api_server, api_path, collection, entries,
         yield from make_cells(entry)
         yield ENTRY_END
 
-        next_index = i+1
+        next_index = i + 1
 
         if next_index % 1000 == 0:
             elapsed = time() - start
