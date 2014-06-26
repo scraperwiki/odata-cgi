@@ -29,4 +29,4 @@ def test_make_cells_datetime():
     }
     cells = odata.make_cells(fixture)
     (result,) = cells
-    assert_in('m:type="Edm.DateTime"', result)
+    assert_in('m:type="Edm.DateTimeOffset"', result)

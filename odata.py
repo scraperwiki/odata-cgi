@@ -82,7 +82,7 @@ TYPEMAP = {
     float: "Edm.Double",
     int: "Edm.Int64",
     # long: "Edm.Int64",
-    datetime: "Edm.DateTime",
+    datetime: "Edm.DateTimeOffset",
     str: "Edm.String",
     # unicode: "Edm.String",
 }
