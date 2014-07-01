@@ -96,6 +96,14 @@ from xml.sax.saxutils import escape
 def format_date_for_tableau(d):
     return d.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
+# I think lowercase "true" and "false" may be OData standard anyway,
+# certainly it is all Tableau accepts.
+def format_bool_for_tableau(value):
+    if value:
+        return "true"
+    else:
+        return "false"
+
 def make_cells(cells):
     result = []
     for key, value in cells.items():
@@ -115,6 +123,9 @@ def make_cells(cells):
 
         if type(value) == datetime:
             value = format_date_for_tableau(value)
+
+        if type(value) == bool:
+            value = format_bool_for_tableau(value)
 
         yield form.format(
             safe_name=key,

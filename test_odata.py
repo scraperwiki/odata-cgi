@@ -41,3 +41,17 @@ def test_make_cells_datetime_natural():
     # Tableau 8.2 accepts.
     assert_in('<d:humbug m:type="Edm.DateTimeOffset">2008-11-24T15:11:49.000000Z</d:humbug>', result)
 
+def test_make_cells_boolean():
+    fixture = {
+        "apple": True,
+        "orange": False
+    }
+    cells = odata.make_cells(fixture)
+    (result1,result2) = sorted(cells)
+    # This exact format - with milliseconds, and Z as timezone - is only one
+    # Tableau 8.2 accepts.
+    assert_in('<d:apple m:type="Edm.Boolean">true</d:apple>', result1)
+    assert_in('<d:orange m:type="Edm.Boolean">false</d:orange>', result2)
+
+
+
