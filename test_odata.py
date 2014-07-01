@@ -41,6 +41,15 @@ def test_make_cells_datetime_natural():
     # Tableau 8.2 accepts.
     assert_in('<d:humbug m:type="Edm.DateTimeOffset">2008-11-24T15:11:49.000000Z</d:humbug>', result)
 
+def test_make_cells_date():
+    fixture = {
+        "somewhen": datetime.date(2004, 1, 19),
+    }
+    cells = odata.make_cells(fixture)
+    (result,) = cells
+
+    assert_in('<d:somewhen m:type="Edm.Date">2004-01-19</d:somewhen>', result)
+
 def test_make_cells_boolean():
     fixture = {
         "apple": True,
