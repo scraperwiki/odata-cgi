@@ -30,8 +30,6 @@ request_path = os.environ.get('PATH_INFO', '/toolid/token/cgi-bin/odata')
 api_path = '/'.join(request_path.split('/')[0:5])
 api_server = os.environ.get('HTTP_HOST', 'server.scraperwiki.com')
 
-# format_date = datetime.isoformat
-
 
 TEMPLATE_START = """\
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
@@ -41,7 +39,7 @@ TEMPLATE_START = """\
  xmlns="http://www.w3.org/2005/Atom">
   <title type="text">{collection}</title>
   <id>https://{api_server}{api_path}/{collection}</id>
-  <updated>{update_time}Z</updated>
+  <updated>{update_time}</updated>
   <m:count>{total_count}</m:count>
   <link rel="self" title="{collection}"\
  href="https://{api_server}{api_path}/{collection}" />
@@ -58,7 +56,7 @@ ENTRY_START = """\
   <entry>
     <id>https://{api_server}{api_path}/{collection}({rowid})</id>
     <title type="text"></title>
-    <updated>{update_time}Z</updated>
+    <updated>{update_time}</updated>
     <author><name /></author>
     <category term="scraperwiki.com.sql"\
  scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
@@ -90,6 +88,13 @@ TYPEMAP = {
 
 from xml.sax.saxutils import escape
 
+# Tableau only takes date/times in OData which have milliseconds and
+# a Z at the end (no other timezone).
+# XXX not clear SQLAlchemy is returning the correctly timezoned data.
+# This works for Twitter data as in UTC, needs testing more on other
+# timezone data. For now, better than whole thing being broken.
+def format_date_for_tableau(d):
+    return d.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 def make_cells(cells):
     result = []
@@ -109,7 +114,7 @@ def make_cells(cells):
             value = escape(value)
 
         if type(value) == datetime:
-            value = value.isoformat() + "Z"
+            value = format_date_for_tableau(value)
 
         yield form.format(
             safe_name=key,
@@ -124,7 +129,7 @@ def render(api_server, api_path, collection, entries,
         api_server=api_server,
         api_path=api_path,
         collection=collection,
-        update_time=datetime.now().isoformat(),
+        update_time=format_date_for_tableau(datetime.now()),
         total_count=total_count,
     )
 
