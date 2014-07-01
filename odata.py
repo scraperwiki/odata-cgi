@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 
-from datetime import datetime
+from datetime import datetime, date
 from gzip import GzipFile
 from logging import FileHandler, getLogger
 from os.path import join
@@ -81,6 +81,7 @@ TYPEMAP = {
     int: "Edm.Int64",
     # long: "Edm.Int64",
     datetime: "Edm.DateTimeOffset",
+    date: "Edm.Date",
     str: "Edm.String",
     # unicode: "Edm.String",
 }
