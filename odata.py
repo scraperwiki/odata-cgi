@@ -226,7 +226,7 @@ app.url_map.strict_slashes = False
 
 @app.route(api_path + "/<collection>/")
 def show_collection(collection):
-    log.info("show_collection(collection) req args {}".format(request.args))
+    log.info("show_collection({}) req args {}".format(collection, request.args))
 
     engine = create_engine('sqlite:////home/scraperwiki.sqlite')
     m = MetaData(engine)
