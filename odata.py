@@ -181,7 +181,7 @@ def render(api_server, api_path, collection, entries,
 
 
 def build_odata(table, collection, offset=0, limit=100000, skip_token=None):
-    records = select(["rowid", table])
+    records = select(["rowid as rowid", table])
     record_count_total = records.count().scalar()
 
     records = records.offset(offset).limit(limit)
