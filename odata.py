@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import re
 import sys
 
 from datetime import datetime, date
@@ -94,16 +95,21 @@ from xml.sax.saxutils import escape
 # XXX not clear SQLAlchemy is returning the correctly timezoned data.
 # This works for Twitter data as in UTC, needs testing more on other
 # timezone data. For now, better than whole thing being broken.
+
+
 def format_date_for_tableau(d):
     return d.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 # I think lowercase "true" and "false" may be OData standard anyway,
 # certainly it is all Tableau accepts.
+
+
 def format_bool_for_tableau(value):
     if value:
         return "true"
     else:
         return "false"
+
 
 def make_cells(cells):
     result = []
@@ -180,8 +186,37 @@ def render(api_server, api_path, collection, entries,
     yield TEMPLATE_END
 
 
+def escape_column_name(name):
+    # returns a version of `name` that is
+    # safe to use in as an XML tag name
+    if re.match(r'([^a-z]|xml)', name, flags=re.IGNORECASE):
+        safe_name = 'x'
+    else:
+        safe_name = ''
+    capitalise_next = False
+    for char in name:
+        if char in ' -_=()[]}{|+&/\\':
+            # ignore this character,
+            # and capitalise the next one
+            capitalise_next = True
+        elif char in '"\'':
+            # just ignore this character
+            pass
+        else:
+            if capitalise_next:
+                safe_name += char.upper()
+                capitalise_next = False
+            else:
+                safe_name += char
+    return safe_name
+
+
 def build_odata(table, collection, offset=0, limit=100000, skip_token=None):
-    records = select([column("rowid").label("rowid"), table])
+    columns = [column("rowid").label("rowid")]
+    columns.extend(col.label(escape_column_name(name))
+                   for name, col in table.c.items())
+
+    records = select(columns)
     record_count_total = records.count().scalar()
 
     records = records.offset(offset).limit(limit)
@@ -226,7 +261,8 @@ app.url_map.strict_slashes = False
 
 @app.route(api_path + "/<collection>/")
 def show_collection(collection):
-    log.info("show_collection({}) req args {}".format(collection, request.args))
+    log.info("show_collection({}) req args {}"
+             .format(collection, request.args))
 
     engine = create_engine('sqlite:////home/scraperwiki.sqlite')
     m = MetaData(engine)
