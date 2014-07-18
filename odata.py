@@ -19,7 +19,7 @@ from flask import Flask, Response, render_template, request
 from wsgiref.handlers import CGIHandler
 
 from sqlalchemy import create_engine, MetaData
-from sqlalchemy.sql import select
+from sqlalchemy.sql import column, select
 
 log = getLogger('odata')
 HOME = os.environ.get("HOME", "/home")
@@ -181,7 +181,7 @@ def render(api_server, api_path, collection, entries,
 
 
 def build_odata(table, collection, offset=0, limit=100000, skip_token=None):
-    records = select(["rowid as rowid", table])
+    records = select([column("rowid").label("rowid"), table])
     record_count_total = records.count().scalar()
 
     records = records.offset(offset).limit(limit)
