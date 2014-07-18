@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import re
 import sys
 
 from datetime import datetime, date
@@ -180,8 +181,37 @@ def render(api_server, api_path, collection, entries,
     yield TEMPLATE_END
 
 
+def escape_column_name(name):
+    # returns a version of `name` that is
+    # safe to use in as an XML tag name
+    if re.match(r'([^a-z]|xml)', name, flags=re.IGNORECASE):
+        safe_name = 'x'
+    else:
+        safe_name = ''
+    capitalise_next = False
+    for char in name:
+        if char in ' -_=()[]}{|+&/\\':
+            # ignore this character,
+            # and capitalise the next one
+            capitalise_next = True
+        elif char in '"\'':
+            # just ignore this character
+            pass
+        else:
+            if capitalise_next:
+                safe_name += char.upper()
+                capitalise_next = False
+            else:
+                safe_name += char
+    return safe_name
+
+
 def build_odata(table, collection, offset=0, limit=100000, skip_token=None):
-    records = select([column("rowid").label("rowid"), table])
+    columns = [column("rowid").label("rowid")]
+    columns.extend(col.label(escape_column_name(name))
+                   for name, col in table.c.items())
+
+    records = select(columns)
     record_count_total = records.count().scalar()
 
     records = records.offset(offset).limit(limit)
