@@ -22,3 +22,11 @@ normally the box identifier, the box token, the literal
 `cgi-bin`, the literal `odata`. The remainder of the URL (`collection`,
 above) is taken to be the collection (database table) to access.
 
+
+### Query parameters
+
+The following query parameters are used:
+
+    $skip
+    $skiptoken
+    $top
