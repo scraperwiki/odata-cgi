@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-
 import logging
 import os
 import re
@@ -263,6 +262,14 @@ app.url_map.strict_slashes = False
 def show_collection(collection):
     log.info("show_collection({}) req args {}"
              .format(collection, request.args))
+
+    REFRESH_HOOK = "/home/hooks/odata-refresh"
+    hook_exists = os.path.exists(REFRESH_HOOK)
+    log.info("refresh hook {}, exists: {}"
+             .format(REFRESH_HOOK, hook_exists))
+    if hook_exists:
+        rc = os.system("cd ~ && {}".format(REFRESH_HOOK))
+        log.info("system result code: {}".format(rc))
 
     engine = create_engine('sqlite:////home/scraperwiki.sqlite')
     m = MetaData(engine)
