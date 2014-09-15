@@ -12,6 +12,7 @@ from gzip import GzipFile
 from logging import FileHandler, getLogger
 from sys import stdout
 from time import time
+from xml.sax.saxutils import escape
 
 
 from flask import Flask, Response, render_template, request
@@ -23,8 +24,7 @@ from sqlalchemy.sql import column, select
 log = getLogger('odata')
 HOME = os.environ.get("HOME", "/home")
 
-# Get the "root" url path, because
-# Flask isn't running at the domain root
+# Get the "root" url path, because Flask isn't running at the domain root.
 request_path = os.environ.get('PATH_INFO', '/toolid/token/cgi-bin/odata')
 api_path = '/'.join(request_path.split('/')[0:5])
 api_server = os.environ.get('HTTP_HOST', 'server.scraperwiki.com')
@@ -86,22 +86,16 @@ TYPEMAP = {
 }
 
 
-from xml.sax.saxutils import escape
-
 # Tableau only takes date/times in OData which have milliseconds and
 # a Z at the end (no other timezone).
 # XXX not clear SQLAlchemy is returning the correctly timezoned data.
 # This works for Twitter data as in UTC, needs testing more on other
 # timezone data. For now, better than whole thing being broken.
-
-
 def format_date_for_tableau(d):
     return d.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 # I think lowercase "true" and "false" may be OData standard anyway,
 # certainly it is all Tableau accepts.
-
-
 def format_bool_for_tableau(value):
     if value:
         return "true"
