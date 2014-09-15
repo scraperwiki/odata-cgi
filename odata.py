@@ -256,13 +256,14 @@ def show_collection(collection):
     log.info("show_collection({}) req args {}"
              .format(collection, request.args))
 
-    REFRESH_HOOK = "/home/hooks/odata-refresh"
-    hook_exists = os.path.exists(REFRESH_HOOK)
-    log.info("refresh hook {}, exists: {}"
-             .format(REFRESH_HOOK, hook_exists))
-    if hook_exists:
-        rc = os.system("cd ~ && {}".format(REFRESH_HOOK))
-        log.info("system result code: {}".format(rc))
+    limit = int(request.args.get('$top', 100000))
+    offset = int(request.args.get('$skip', 0))
+    if request.args.get('$skiptoken'):
+        limit = 100000 # (drj) seems wrong (based on OData 4.0 protocol).
+        offset = int(request.args.get('$skiptoken'))
+
+    if offset == 0:
+        consider_refresh_hook()
 
     engine = create_engine('sqlite:////home/scraperwiki.sqlite')
     m = MetaData(engine)
@@ -270,17 +271,26 @@ def show_collection(collection):
 
     table = m.tables[collection]
 
-    limit = int(request.args.get('$top', 100000))
-    offset = int(request.args.get('$skip', 0))
-    if request.args.get('$skiptoken'):
-        limit = 100000 # (drj) seems wrong (based on OData 4.0 protocol).
-        offset = int(request.args.get('$skiptoken'))
-
     log.info("offset, limit = {} {}".format(offset, limit))
     result = build_odata(table, collection, offset, limit,
                          request.args.get('$skiptoken'))
 
     return Response(result, mimetype='application/xml;charset=utf-8')
+
+def consider_refresh_hook():
+    """
+    If hooks/odata-refresh exists, try and run it.
+    """
+
+    REFRESH_HOOK = "/home/hooks/odata-refresh"
+    # :todo:(drj) who cares if it doesn't exist. Try running it
+    # anyway; what's the worst that can happen?
+    hook_exists = os.path.exists(REFRESH_HOOK)
+    log.info("refresh hook {}, exists: {}"
+             .format(REFRESH_HOOK, hook_exists))
+    if hook_exists:
+        rc = os.system("cd ~ && {}".format(REFRESH_HOOK))
+        log.info("system result code: {}".format(rc))
 
 if __name__ == "__main__":
     # Are we running as CGI, or shell script?
