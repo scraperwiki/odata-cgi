@@ -280,7 +280,7 @@ def show_collection(collection):
     limit = int(request.args.get('$top', 100000))
     offset = int(request.args.get('$skip', 0))
     if request.args.get('$skiptoken'):
-        limit = 100000
+        limit = 100000 # (drj) seems wrong (based on OData 4.0 protocol).
         offset = int(request.args.get('$skiptoken'))
 
     log.info("offset, limit = {} {}".format(offset, limit))
