@@ -10,7 +10,6 @@ import sys
 from datetime import datetime, date
 from gzip import GzipFile
 from logging import FileHandler, getLogger
-from os.path import join
 from sys import stdout
 from time import time
 
@@ -293,7 +292,7 @@ if __name__ == "__main__":
     # Are we running as CGI, or shell script?
     IS_CGI = os.environ.get("GATEWAY_INTERFACE") == "CGI/1.1"
     if IS_CGI:
-        h = FileHandler(join(HOME, "http", "log.txt"))
+        h = FileHandler(os.path.join(HOME, "http", "log.txt"))
         log.addHandler(h)
         app.logger.addHandler(h)
         log.setLevel(logging.INFO)
